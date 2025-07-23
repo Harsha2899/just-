@@ -10,8 +10,7 @@ let selectedSectionQuestions = []; // Holds questions for the currently selected
 let currentSessionId = ""; // To store a unique ID for the current quiz session
 
 // Make sure this URL is correct and active for your Google Apps Script
-// *** IMPORTANT: Replace this URL with the one you get from a new deployment.
-const googleAppsScriptURL = 'https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbwLuBiKABEFy2SJM7dcymQ13jdwi-omYDd39P8F1YGK71a7jrUK0Z5t3_yRpvTeaVwtRg/exec'; // REPLACE THIS PART
+const googleAppsScriptURL = "https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbwLuBiKABEFy2SJM7dcymQ13jdwi-omYDd39P8F1YGK71a7jrUK0Z5t3_yRpvTeaVwtRg/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
   fetch("questions.json")
@@ -215,6 +214,7 @@ function handleSubmitAnswer(selectedValue) {
     feedbackBox.classList.add("correct");
     feedbackBox.classList.remove("incorrect");
     correctCount++;
+    // FIX: Check for both old and new follow-up fields
     if (q.followUpQuestion || q.followUpCorrect) {
         q.followUpNeeded = true;
         if (!followUpAnswered.has(q.id)) {
@@ -278,9 +278,11 @@ function markQuestionAsSkipped(index) {
 
 function showFollowUp(q, isRevisit = false) {
   const followUp = document.getElementById("followUpContainer");
+  // FIX: Dynamically choose the follow-up question text based on which field exists
   const followUpQuestionText = q.followUpCorrect || q.followUpQuestion;
   followUp.innerHTML = `<p>${followUpQuestionText}</p>`;
 
+  // FIX: Dynamically choose the follow-up options based on which field exists
   const followUpOptions = q.followUpCorrectOptions || q.followUpOptions;
 
   followUpOptions.forEach((opt, i) => {
@@ -320,6 +322,7 @@ function handleSubmitFollowUp(selectedValue, q, followUpContainer) {
         return;
     }
 
+    // FIX: Dynamically choose the correct follow-up answer field
     const correct = selectedValue === (q.followUpCorrectAnswer || q.followUpAnswer);
     const feedbackText = correct ? "✅ Correct!" : "❌ Incorrect." ;
     const feedbackParagraph = document.createElement("p");
@@ -348,6 +351,7 @@ function handleSubmitFollowUp(selectedValue, q, followUpContainer) {
         selectedValue,
         "N/A",
         `${q.id}_followup`,
+        // FIX: Use the correct follow-up question text
         q.followUpCorrect || q.followUpQuestion 
     );
 }
@@ -386,7 +390,7 @@ function logAnswer(
   fetch(googleAppsScriptURL, {
     method: "POST",
     body: JSON.stringify(payload),
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
   })
   .then(response => response.json())
   .then(data => {
@@ -414,7 +418,7 @@ function logFinalScore(finalCorrectCount, finalIncorrectCount, totalQuestions, p
     fetch(googleAppsScriptURL, {
         method: "POST",
         body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
     })
     .then(response => response.json())
     .then(data => {
